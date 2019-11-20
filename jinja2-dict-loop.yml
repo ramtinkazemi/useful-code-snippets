@@ -1,0 +1,67 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars:
+    dict1:
+      simple: myvalue
+      list: 
+        - myvalue1
+        - myvalue2
+        - myvalue3
+      dict:
+        key1: myvalue1
+        key2: myvalue2
+      nested_dict:
+        key1: myvalue1
+        key2: myvalue2
+        key3: 
+          key3_1: myvalue3_1
+          key3_2: myvalue3_2
+      dict_with_list:
+        key1: myvalue1
+        key2: myvalue2
+        key3: [ myvalue3_1, myvalue3_2, myvalue3_3 ]
+
+  tasks:
+    - name: loop through dict1 items
+      set_fact:
+        msg: "{% for item in dict1 %}
+                {% if dict1[item] is mapping %}
+                  \n{{ item }} : dict({{ dict1[item] }}) => 1st level\n
+                  \n\t*** Looping through 2nd level items of a dict ***\n
+
+                  \t*** First approach ***\n
+                  {% for key in dict1[item] %}
+                    \t{{ key }} : {{ dict1[item][key] }} => 2nd level\n
+                  {% endfor %}
+
+                  \n\t*** Second approach ***\n
+                  {% for key, value in dict1[item].items() %}
+                    \t{{ key }} : {{ value }} => 2nd level\n
+                  {% endfor %}
+
+                {% elif dict1[item] is iterable %}
+
+                  {% if dict1[item] is string %}
+                    \n{{ item }} : string({{ dict1[item] }}) => 1st level\n
+
+                  {% else %}
+                      \n{{ item }} : list({{ dict1[item] }}) => 1st level\n
+                      \n\t*** Looping through 2nd level items of a list ***\n
+
+                      {% for value in dict1[item] %}
+                        \t{{ value }} => 2nd level\n
+                      {% endfor %}
+
+                  {% endif %}
+                {% else %}
+                  \n{{ item }} : tupple({{ dict1[item] }}) => 1st level\n
+                {% endif %}
+
+              {% endfor %}"
+
+    - name: copy the output to a local file
+      copy:
+        content: '{{ msg }}'
+        dest: 'output.txt'
+      delegate_to: localhost

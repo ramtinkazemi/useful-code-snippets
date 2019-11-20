@@ -1,1 +1,1 @@
-# useful-code-snippets
+This repository contains some useful tips and code snippets.
